@@ -97,13 +97,17 @@ komputer_echo "Installing services..."
 brew bundle --file=- <<EOF
 tap "homebrew/services"
 tap "caskroom/cask"
+tap "caskroom/fonts"
 
 # Unix
 brew "git"
 brew "reattach-to-user-namespace"
 brew "tmux"
-brew "vim"
 brew "zsh"
+brew "zsh-completions"
+brew "vim"
+brew "readline"
+brew "xz"
 
 # Image manipulation
 brew "imagemagick"
@@ -111,9 +115,19 @@ brew "imagemagick"
 # Programming languages
 brew "rbenv"
 brew "ruby-build"
+brew "python"
+brew "pyenv"
+brew "golang"
+brew "heroku-toolbelt"
 
 # Tools
-brew "npm"
+brew "postgresql"
+brew "redis"
+brew "erlang"
+brew "elixir"
+brew "yarn"
+brew "watchman"
+brew "chromedriver"
 EOF
 
 # Check for Node
@@ -124,21 +138,29 @@ else
   komputer_echo 'Node already installed. Skipping...'
 fi
 
+npm install ember-cli -g
+npm install -g jshint
+npm install -g eslint
+
 applications=(
-  alfred
-  caffeine
   google-chrome
-  firefox
   iterm2
-  vagrant
   virtualbox
   atom
-  the-unarchiver
   sketch
-  dash
   slack
   docker
   spotify
+  java
+  dash
+  google-cloud-sdk
+  googleappengine
+  google-drive-file-stream
+  1password
+  intellij-idea-ce
+  font-source-code-pro
+  font-inconsolata-dz-for-powerline
+  skitch
 )
 
 komputer_echo "Installing applications..."
@@ -182,5 +204,24 @@ sudo gem update --system
 gem_install_or_update 'bundler'
 number_of_cores=$(sysctl -n hw.ncpu)
 bundle config --global jobs $((number_of_cores - 1))
+gem install rails
+gem install foreman
+
+sudo easy_install pip
+
+CFLAGS="-I$(brew --prefix openssl)/include" \
+LDFLAGS="-L$(brew --prefix openssl)/lib" \
+pyenv install -v 2.7.14
+
+CFLAGS="-I$(brew --prefix openssl)/include" \
+LDFLAGS="-L$(brew --prefix openssl)/lib" \
+pyenv install -v 3.6.3
+
+pyenv global 3.6.3 2.7.14
+pyenv rehash
+
+git clone https://github.com/powerline/fonts.git --depth=1
+cd fonts
+./install.sh
 
 komputer_echo "Congratulations! Your komputer maschine is ready to go."
