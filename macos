@@ -35,13 +35,13 @@ fi
 
 append_to_zshrc 'export PATH="$HOME/.bin:$PATH"'
 
-if [ ! -d "/usr/local" ]; then
-  sudo mkdir /usr/local
+if [ ! -d "/usr/local/include" ]; then
+  sudo mkdir /usr/local/include
 fi
 
-sudo chown -R $(whoami) /usr/local
+sudo chown -R $(whoami) /usr/local/include
 
-HOMEBREW_PREFIX="/usr/local"
+HOMEBREW_PREFIX="/usr/local/include"
 
 if [ -d "$HOMEBREW_PREFIX" ]; then
   if ! [ -r "$HOMEBREW_PREFIX" ]; then
@@ -145,7 +145,6 @@ npm install -g eslint
 applications=(
   google-chrome
   iterm2
-  virtualbox
   atom
   sketch
   slack
@@ -157,10 +156,13 @@ applications=(
   googleappengine
   google-drive-file-stream
   1password
-  intellij-idea-ce
   font-source-code-pro
   font-inconsolata-dz-for-powerline
   skitch
+  imageoptim
+  recordit
+  macvim
+  microsoft-office
 )
 
 komputer_echo "Installing applications..."
@@ -201,13 +203,11 @@ fi
 rbenv global "$ruby_version"
 rbenv shell "$ruby_version"
 sudo gem update --system
-gem_install_or_update 'bundler'
+gem install bundler
 number_of_cores=$(sysctl -n hw.ncpu)
 bundle config --global jobs $((number_of_cores - 1))
 gem install rails
 gem install foreman
-
-sudo easy_install pip
 
 CFLAGS="-I$(brew --prefix openssl)/include" \
 LDFLAGS="-L$(brew --prefix openssl)/lib" \
@@ -219,6 +219,8 @@ pyenv install -v 3.6.3
 
 pyenv global 3.6.3 2.7.14
 pyenv rehash
+
+sudo easy_install pip
 
 git clone https://github.com/powerline/fonts.git --depth=1
 cd fonts
