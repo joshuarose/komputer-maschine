@@ -203,11 +203,11 @@ fi
 rbenv global "$ruby_version"
 rbenv shell "$ruby_version"
 sudo gem update --system
-gem install bundler
+sudo gem install bundler
 number_of_cores=$(sysctl -n hw.ncpu)
 bundle config --global jobs $((number_of_cores - 1))
-gem install rails
-gem install foreman
+sudo gem install rails
+sudo gem install foreman
 
 CFLAGS="-I$(brew --prefix openssl)/include" \
 LDFLAGS="-L$(brew --prefix openssl)/lib" \
