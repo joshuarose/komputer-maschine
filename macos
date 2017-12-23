@@ -40,6 +40,8 @@ if [ ! -d "/usr/local/include" ]; then
 fi
 
 sudo chown -R $(whoami) /usr/local/include
+sudo chown -R $(whoami) /etc/shells
+
 
 HOMEBREW_PREFIX="/usr/local/include"
 
@@ -53,10 +55,13 @@ else
   sudo chown -R "$LOGNAME:admin" "$HOMEBREW_PREFIX"
 fi
 
+brew install zsh
+
 case "$SHELL" in
   */zsh) : ;;
   *)
     komputer_echo "Changing your shell to zsh..."
+    echo -e "/usr/local/bin/zsh\n$(cat /etc/shells)" > /etc/shells
       sudo chsh -s "$(which zsh)"
     ;;
 esac
@@ -103,11 +108,13 @@ tap "caskroom/fonts"
 brew "git"
 brew "reattach-to-user-namespace"
 brew "tmux"
-brew "zsh"
 brew "zsh-completions"
 brew "vim"
 brew "readline"
 brew "xz"
+brew "fzf"
+brew "ack"
+brew "tree"
 
 # Image manipulation
 brew "imagemagick"
@@ -119,6 +126,7 @@ brew "python"
 brew "pyenv"
 brew "golang"
 brew "heroku-toolbelt"
+brew "mas"
 
 # Tools
 brew "postgresql"
@@ -146,23 +154,24 @@ applications=(
   google-chrome
   iterm2
   atom
+  virtualbox
+  vagrant
   sketch
-  slack
   docker
   spotify
   java
-  dash
+  postman
   google-cloud-sdk
-  googleappengine
-  google-drive-file-stream
-  1password
+  google-drive
   font-source-code-pro
   font-inconsolata-dz-for-powerline
-  skitch
   imageoptim
   recordit
   macvim
+  pycharm
+  firefox
   microsoft-office
+  dash
 )
 
 komputer_echo "Installing applications..."
@@ -179,7 +188,6 @@ install_application() {
 for application in "${applications[@]}"
   do install_application $application
 done
-
 # Clean up Homebrew files
 komputer_echo "Cleaning up files..."
 brew cleanup
@@ -209,6 +217,11 @@ bundle config --global jobs $((number_of_cores - 1))
 sudo gem install rails
 sudo gem install foreman
 
+
+# Setup Python
+komputer_echo "Configuring Python"
+append_to_zshrc 'eval "$(pyenv init - --no-rehash)"' 1
+eval "$(pyenv init -)"
 CFLAGS="-I$(brew --prefix openssl)/include" \
 LDFLAGS="-L$(brew --prefix openssl)/lib" \
 pyenv install -v 2.7.14
@@ -220,10 +233,106 @@ pyenv install -v 3.6.3
 pyenv global 3.6.3 2.7.14
 pyenv rehash
 
-sudo easy_install pip
+curl https://bootstrap.pypa.io/get-pip.py > get-pip.py
+sudo python get-pip.py
+pip install --upgrade pip
+pip install virtualenv
+pip install virtualenvwrapper
+brew install gcc
+pip install nose pyparsing python-dateutil pep8
 
+brew tap samueljohn/python
+brew tap homebrew/science
+brew install numpy
+brew install scipy
+brew install zeromq
+brew install pyqt
+pip install 'ipython[zmq,qtconsole,notebook,test]'
+
+# Setup powerline fonts
+rm -rf ~/fonts
 git clone https://github.com/powerline/fonts.git --depth=1
-cd fonts
+cd ~/fonts
 ./install.sh
+
+# Tweetbot
+mas install 557168941
+# Color picker
+mas install 641027709
+# 1 password
+mas install 443987910
+# BetterSnapTool
+mas install 417375580
+# Pages
+mas install 409201541
+# HP Easy Scan
+mas install 967004861
+# Keynote
+mas install 409183694
+# Live Reload
+mas install 482898991
+# Skitch
+mas install 425955336
+# Numbers
+mas install 409203825
+# XCode
+mas install 497799835
+# Unarchiver
+mas install 425424353
+# Kindle
+mas install 405399194
+# Postico
+mas install 1031280567
+
+
+# Setup Git config
+#! /usr/local/bin/zsh -
+cd ~
+curl -O https://raw.githubusercontent.com/nicolashery/mac-dev-setup/master/.gitconfig
+curl https://raw.githubusercontent.com/github/gitignore/master/Global/macOS.gitignore -o ~/.gitignore
+git config --global user.name "Joshua Rose"
+git config --global user.email "joshuarose@outlook.com"
+git config --global credential.helper osxkeychain
+
+rm -rf ~/.zprezto
+git clone --recursive https://github.com/sorin-ionescu/prezto.git "${ZDOTDIR:-$HOME}/.zprezto"
+setopt EXTENDED_GLOB
+for rcfile in "${ZDOTDIR:-$HOME}"/.zprezto/runcoms/^README.md(.N); do
+  ln -s "$rcfile" "${ZDOTDIR:-$HOME}/.${rcfile:t}"
+done
+
+echo "if [[ -s \"${ZDOTDIR:-$HOME}/.zprezto/init.zsh\" ]]; then\n\tsource \"${ZDOTDIR:-$HOME}/.zprezto/init.zsh\"\nfi" >> ~/.zshrc
+echo "zstyle ':prezto:load' pmodule \\" >> ~/.zpreztorc
+echo "\t'environment' \\" >> ~/.zpreztorc
+echo "\t'editor' \\" >> ~/.zpreztorc
+echo "\t'history' \\" >> ~/.zpreztorc
+echo "\t'directory' \\" >> ~/.zpreztorc
+echo "\t'spectrum' \\" >> ~/.zpreztorc
+echo "\t'utility' \\" >> ~/.zpreztorc
+echo "\t'completion' \\" >> ~/.zpreztorc
+echo "\t'git' \\" >> ~/.zpreztorc
+echo "\t'syntax-highlighting' \\" >> ~/.zpreztorc
+echo "\t'history-substring-search' \\" >> ~/.zpreztorc
+echo "\t'prompt' \\" >> ~/.zpreztorc
+echo "zstyle ':prezto:module:prompt' theme 'paradox'" >> ~/.zpreztorc
+echo "source ~/env.sh" >> ~/.zshrc
+
+git clone https://github.com/amix/vimrc.git ~/.vim_runtime
+sh ~/.vim_runtime/install_awesome_vimrc.sh
+
+# Remove default icons from Dock
+defaults delete com.apple.dock persistent-apps
+defaults delete com.apple.dock persistent-others
+defaults write com.apple.dock pinning -string end
+defaults write com.apple.Dock autohide-delay -float 0
+defaults write com.apple.Dock autohide -bool TRUE
+defaults write NSGlobalDomain KeyRepeat -int 0.02
+defaults write NSGlobalDomain InitialKeyRepeat -int 12
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadCornerSecondaryClick -int 2
+defaults write com.apple.driver.AppleBluetoothMultitouch.trackpad TrackpadRightClick -bool true
+defaults -currentHost write NSGlobalDomain com.apple.trackpad.trackpadCornerClickBehavior -int 1
+defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true
+defaults write com.apple.systemuiserver "NSStatusItem Visible com.apple.menuextra.volume" -int 0
+killall Dock
 
 komputer_echo "Congratulations! Your komputer maschine is ready to go."
